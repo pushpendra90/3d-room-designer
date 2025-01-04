@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Room Designer with Matterport</title>
+    <script src="https://unpkg.com/@matterport/sdk@1.0.0"></script>
+</head>
+<body>
+    <h1>3D Room Designer using Matterport</h1>
+    <div id="showcase-container" style="width: 100%; height: 600px;"></div>
+    <button onclick="saveDesign()">Save Design</button>
+    <script>
+        let showcaseApp;
+        let placedObjects = [];
+
+        // Initialize Matterport SDK
+        window.MP_SDK.connect('showcase-container', 'YOUR_API_KEY_HERE')
+            .then(function (sdk) {
+                showcaseApp = sdk;
+                console.log('Matterport SDK Connected');
+            })
+            .catch(console.error);
+
+        // Function to add objects like table and chair
+        function addObject(objectType) {
+            if (!showcaseApp) {
+                alert('Matterport SDK not initialized');
+                return;
+            }
+            const position = {
+                x: Math.random() * 2,
+                y: 0,
+                z: Math.random() * 2
+            };
+            const rotation = { x: 0, y: Math.random() * 360, z: 0 };
+            showcaseApp.Scene.createNode()
+                .then(node => {
+                    node.addComponent('mp-transform', { position, rotation });
+                    node.addComponent('mp-model', { url: `/${objectType}.glb` });
+                    placedObjects.push({ objectType, position });
+                    console.log(`${objectType} added at`, position);
+                });
+        }
+
+        // Function to preview the final room setup
+        function previewRoom() {
+            console.log('Previewing room setup:', placedObjects);
+            alert('Previewing room setup. Check the console for object positions.');
+        }
+
+        // Function to save the design
+        function saveDesign() {
+            const jsonData = JSON.stringify(placedObjects);
+            const blob = new Blob([jsonData], { type: 'application/json' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'room-design.json';
+            link.click();
+            console.log('Room design saved!');
+        }
+    </script>
+    <button onclick="addObject('table')">Add Table</button>
+    <button onclick="addObject('chair')">Add Chair</button>
+    <button onclick="previewRoom()">Preview Room</button>
+</body>
+</html>
